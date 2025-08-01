@@ -6,6 +6,7 @@ permission-command: 'lp user {player} permission set droputils.dragonegg true'
 egg-item:
   name: '&d&lDragon Egg'
   lore: []
+  player-lore: '&r&fPlayer: &#37bbe2{playername}'
 
 # Settings for if give-egg is false.
 drop-location:

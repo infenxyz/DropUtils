@@ -1,6 +1,8 @@
 package dev.infen;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -12,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -52,18 +55,39 @@ public class DragonKillListener implements Listener {
                         meta.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize(rawName));
                     }
                     List<String> rawLore = plugin.getConfig().getStringList("egg-item.lore");
-                    if (!rawLore.isEmpty()) {
-                        List<Component> loreComps = rawLore.stream()
-                            .map(s -> LegacyComponentSerializer.legacyAmpersand().deserialize(s))
-                            .collect(Collectors.toList());
-                        if (plugin.getConfig().getBoolean("add-player-name", false)) {
-                            loreComps.add(Component.text(killer.getName()));
+                    List<Component> loreComps = new ArrayList<>();
+                    // add custom lore lines
+                    for (String line : rawLore) {
+                        Component comp = LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(line)
+                            .decoration(TextDecoration.ITALIC, false);
+                        loreComps.add(comp);
+                    }
+                    // optionally add formatted player line
+                    if (plugin.getConfig().getBoolean("add-player-name", false)) {
+                        String template = plugin.getConfig().getString("egg-item.player-lore", "");
+                        if (template != null && !template.trim().isEmpty()) {
+                            String replaced = template.replace("{playername}", killer.getName());
+                            Component comp = LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize(replaced)
+                                .decoration(TextDecoration.ITALIC, false);
+                            loreComps.add(comp);
                         }
+                    }
+                    if (!loreComps.isEmpty()) {
                         meta.lore(loreComps);
                     }
                     egg.setItemMeta(meta);
                 }
-                killer.getInventory().addItem(egg);
+                // try to add to inventory; if full, drop at head
+                Map<Integer, ItemStack> leftover = killer.getInventory().addItem(egg);
+                if (!leftover.isEmpty()) {
+                    // drop remaining items at player head location
+                    Location headLoc = killer.getEyeLocation();
+                    for (ItemStack drop : leftover.values()) {
+                        killer.getWorld().dropItem(headLoc, drop);
+                    }
+                }
             } else {
                 dropWorld.getBlockAt(dropLoc).setType(Material.DRAGON_EGG);
             }
