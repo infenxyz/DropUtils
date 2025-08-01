@@ -1,0 +1,4 @@
+name: DropUtils
+version: '1.0.0-SNAPSHOT'
+main: dev.infen.droputils
+api-version: '1.21'

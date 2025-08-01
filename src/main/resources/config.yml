@@ -1,0 +1,17 @@
+# Default configuration for DropUtils plugin
+spawned-for: []
+first-kill-message: '&d&lᴇɢɢ &8| &fYou killed the dragon for the first time, an egg has been dropped!'
+give-egg: true
+add-player-name: true
+egg-item:
+  name: '&d&lDragon Egg'
+  lore:
+    - '&7This egg marks your triumph'
+    - '&7Use it wisely'
+
+# Settings for if give-egg is false.
+drop-location:
+  world: 'world'
+  x: 0
+  y: 80
+  z: 0
