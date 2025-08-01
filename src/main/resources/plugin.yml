@@ -2,3 +2,7 @@ name: DropUtils
 version: '1.0.0-SNAPSHOT'
 main: dev.infen.droputils
 api-version: '1.21'
+permissions:
+  droputils.dragonegg:
+    description: 'Marker permission applied after first dragon kill'
+    default: false

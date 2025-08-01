@@ -1,7 +1,6 @@
 package dev.infen;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -29,8 +28,9 @@ public class DragonKillListener implements Listener {
         if (!(event.getEntity() instanceof EnderDragon)) return;
         Player killer = event.getEntity().getKiller();
         if (killer == null) return;
-        UUID id = killer.getUniqueId();
-        if (plugin.hasSpawned(id)) return;
+        // permission-based first-kill check
+        if (killer.hasPermission("droputils.dragonegg")) return;
+
         // read drop location (world and coordinates) from config
         String wName = plugin.getConfig().getString("drop-location.world", event.getEntity().getWorld().getName());
         World preferred = Bukkit.getWorld(wName);
@@ -73,8 +73,12 @@ public class DragonKillListener implements Listener {
                 killer.sendMessage(msg);
             }
             plugin.getLogger().info((giveEgg ? "Gave" : "Spawned") + " dragon egg for " + killer.getName() + " at " + dropLoc);
+            // execute configured permission command (console)
+            String template = plugin.getConfig().getString("permission-command", "");
+            if (!template.isEmpty()) {
+                String cmd = template.replace("{player}", killer.getName());
+                plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+            }
         });
-        // record that this player has triggered the egg
-        plugin.markSpawned(id);
     }
 }
